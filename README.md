@@ -2,7 +2,13 @@
 MyNutri – Track your meals, log nutrition for foods, and calculate nutrition for your recipes.
 
 ## Highlights
-1. The foods/meals that **you** eat.
+1. The *foods*/*meals* that **you** *consume*. It has 4 relational tables:
+        
+    1. A `food` table. It contains its nurtions based on a reference amount. E.g. 100 g, 100 mL, etc.
+    1. A `meal` table. It contains the a list of foods with the correponding amount. That means, a meal can contain multiple foods, and a food can be in multiple meal.
+    1. A `mealfoodlink` table. It contains the relationship between meal and food. The amount of a food in a meal can, of course, be different than the reference amount in the `food` table.
+    1. A `consumption` table. It contains your consumed food or meal per timestamp. A row in this table can be a food or a meal with the consumed amount. This amount can, of course, be different than the reference amount in the `food` table and the amount in the `mealfoodlink` table.
+
 1. Identity your food and meal by the combination of name and kind. 
     
     !!! note
