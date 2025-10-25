@@ -3,7 +3,7 @@ MyNutri – Track your meals, log nutrition for foods, and calculate nutrition f
 
 ## Highlights
 1. The foods/meals that **you** eat.
-1. Identity your food and meal by the combined name and kind. 
+1. Identity your food and meal by the combination of name and kind. 
     
     !!! note
 
