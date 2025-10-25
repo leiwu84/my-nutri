@@ -12,7 +12,7 @@ MyNutri – Track your meals, log nutrition for foods, and calculate nutrition f
     !!! example
 
         1. `Apple` is a food name; while `Fuji` is its food kind.
-        1. `Chia Seed Pudding` is a meal name; while `with Milk`, `with Youghurt`, and `with Mango Juice` can be its meal kind, so that you can easily record variations of your meal.
+        1. `Chia Seed Pudding` is a meal name; while `with Milk`, `with Yogurt`, and `with Mango Juice` can be its meal kind, so that you can easily record variations of your meal.
 
 1. The consumption table allows you to specify the portion (in the unit of percentage [%]) of a meal. **Very useful when you cook for your family and you measure the amount of the ingradients for the whole meal, and you only eat a portion.**
 
