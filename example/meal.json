@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Salted Apple",
+        "kind": "General",
+        "foods": [
+            {
+                "name": "Sea Salt",
+                "kind": "General",
+                "amount": 0.5,
+                "unit": "g"
+            },
+            {
+                "name": "Apple",
+                "kind": "Fuji",
+                "amount": 50,
+                "unit": "g"
+            }
+        ]
+    }
+]
