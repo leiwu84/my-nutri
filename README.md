@@ -1,6 +1,23 @@
 # my-nutri
 MyNutri – Track your meals, log nutrition for foods, and calculate nutrition for your recipes.
 
+## Highlights
+1. The foods/meals that **you** eat.
+1. Identity your food and meal by the combined name and kind. 
+    
+    !!! note
+
+        Having a common name while further distinguished by kind allows easier query of all kinds of items that share the same name.
+
+    !!! example
+
+        1. `Apple` is a food name; while `Fuji` is its food kind.
+        1. `Chia Seed Pudding` is a meal name; while `with Milk`, `with Youghurt`, and `with Mango Juice` can be its meal kind, so that you can easily record variations of your meal.
+
+1. The consumption table allows you to specify the portion (in the unit of percentage [%]) of a meal. **Very useful when you cook for your family and you measure the amount of the ingradients for the whole meal, and you only eat a portion.**
+
+
+
 ## Introduction
 This is a simple Python application that you can install and run locally on your computer: Windows, Linux, Mac.
 
