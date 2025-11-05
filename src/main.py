@@ -57,11 +57,23 @@ async def create_foods(foods: list[FoodCreate], session: SessionDep):
         return
 
     try:
+        existing = []
         for food in foods:
+            # Check existing to avoid duplicates
+            statement = select(Food).where(
+                Food.name == food.name, Food.kind == food.kind
+            )
+            existing_food = session.exec(statement).one_or_none()
+            if existing_food:
+                existing.append(existing_food)
+                continue
+
             food_new = Food.model_validate(food)
             session.add(food_new)
         session.commit()
-        return {"detail": f"{len(foods)} foods created successfully."}
+        return {
+            "detail": f"Created {len(foods) - len(existing)} food items; skipped {len(existing)} duplicates based on name and kind."
+        }
     except IntegrityError:
         raise HTTPException(
             status_code=409, detail=f"Food already exists: name {food.name}."
@@ -165,7 +177,17 @@ async def create_meals(meals: list[MealCreate], session: SessionDep):
         return
 
     try:
+        existing = []
         for meal in meals:
+            # Check existing to avoid duplicates
+            statement = select(Meal).where(
+                Meal.name == meal.name, Meal.kind == meal.kind
+            )
+            existing_meal = session.exec(statement).one_or_none()
+            if existing_meal:
+                existing.append(existing_meal)
+                continue
+
             meal_new = Meal.model_validate(meal)
             for food_input in meal.foods:
 
@@ -186,7 +208,9 @@ async def create_meals(meals: list[MealCreate], session: SessionDep):
                 session.add(link_new)
 
         session.commit()
-        return {"detail": f"{len(meals)} meals and foods created successfully."}
+        return {
+            "detail": f"Created {len(meals) - len(existing)} meals; skipped {len(existing)} duplicates based on name and kind."
+        }
     except IntegrityError:
         raise HTTPException(
             status_code=409,

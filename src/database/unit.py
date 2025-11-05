@@ -5,3 +5,4 @@ class Unit(str, Enum):
     GRAM = "g"
     MILLILITER = "mL"
     PERCENT = "%"
+    EACH = "each"  # For some countable items.

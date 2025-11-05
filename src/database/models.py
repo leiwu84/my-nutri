@@ -43,11 +43,14 @@ class _FoodBase(SQLModel):
     )
     protein: float | None = Field(description="Nutrition data in [g].", default=None)
     fat: float | None = Field(description="Nutrition data in [g].", default=None)
+    saturated_fat: float | None = Field(
+        description="Nutrition data in [g].", default=None
+    )
     carbohydrates: float | None = Field(
         description="Nutrition data in [g].", default=None
     )
-    fiber: float | None = Field(description="Nutrition data in [g].", default=None)
     sugars: float | None = Field(description="Nutrition data in [g].", default=None)
+    fiber: float | None = Field(description="Nutrition data in [g].", default=None)
 
 
 class Food(_FoodBase, table=True):
