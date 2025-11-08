@@ -1,15 +1,15 @@
 # my-nutri
-MyNutri – Track your meals, log nutrition for foods, and calculate nutrition for your recipes.
+MyNutri – Track your recipes, log nutrition for foods, and calculate nutrition for your recipes.
 
 ## Highlights
-1. It is for the *foods*/*meals* that **you** *consume*. It has 4 relational tables:
+1. It is for the *foods*/*recipes* that **you** *consume*. It has 4 relational tables:
         
     1. A `food` table. It contains its nurtions based on a reference amount. E.g. 100 g, 100 mL, etc.
-    1. A `meal` table. It contains the a list of foods with the correponding amount. That means, a meal can contain multiple foods, and a food can be in multiple meal.
-    1. A `mealfoodlink` table. It contains the relationship between meal and food. The amount of a food in a meal can, of course, be different than the reference amount in the `food` table.
-    1. A `consumption` table. It contains your consumed food or meal per timestamp. A row in this table can be a food or a meal with the consumed amount. This amount can, of course, be different than the reference amount in the `food` table and the amount in the `mealfoodlink` table.
+    1. A `recipe` table. It contains the a list of foods with the correponding amount. That means, a recipe can contain multiple foods, and a food can be in multiple recipe.
+    1. A `recipefoodlink` table. It contains the relationship between recipe and food. The amount of a food in a recipe can, of course, be different than the reference amount in the `food` table.
+    1. A `consumption` table. It contains your consumed food or recipe per timestamp. A row in this table can be a food or a recipe with the consumed amount. This amount can, of course, be different than the reference amount in the `food` table and the amount in the `recipefoodlink` table.
 
-1. Identify your food and meal by the combination of name and kind. 
+1. Identify your food and recipe by the combination of name and kind. 
     
     !!! note
 
@@ -18,9 +18,9 @@ MyNutri – Track your meals, log nutrition for foods, and calculate nutrition f
     !!! example
 
         1. `Apple` is a food name; while `Fuji` is its food kind.
-        1. `Chia Seed Pudding` is a meal name; while `with Milk`, `with Yogurt`, and `with Mango Juice` can be its meal kind, so that you can easily record variations of your meal.
+        1. `Chia Seed Pudding` is a recipe name; while `with Milk`, `with Yogurt`, and `with Mango Juice` can be its recipe kind, so that you can easily record variations of your recipe.
 
-1. The consumption table allows you to specify the portion (in the unit of percentage [%]) of a meal. **Very useful when you cook for your family and you measure the amount of the ingradients for the whole meal, and you only eat a portion.**
+1. The consumption table allows you to specify the portion (in the unit of percentage [%]) of a recipe. **Very useful when you cook for your family and you measure the amount of the ingradients for the whole recipe, and you only eat a portion.**
 
 
 

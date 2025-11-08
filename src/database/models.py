@@ -9,14 +9,16 @@ _DEFAULT_KIND = "General"
 DATETIME_FORMAT = "%Y-%m-%d %H:%M"
 
 
-class MealFoodLink(SQLModel, table=True):
-    meal_id: int | None = Field(default=None, foreign_key="meal.id", primary_key=True)
+class RecipeFoodLink(SQLModel, table=True):
+    recipe_id: int | None = Field(
+        default=None, foreign_key="recipe.id", primary_key=True
+    )
     food_id: int | None = Field(default=None, foreign_key="food.id", primary_key=True)
-    amount: float = Field(description="The amount of the food in this meal")
-    unit: str = Field(description="The unit of the amount of the food in this meal")
+    amount: float = Field(description="The amount of the food in this recipe")
+    unit: str = Field(description="The unit of the amount of the food in this recipe")
 
-    meal: "Meal" = Relationship(back_populates="food_links")
-    food: "Food" = Relationship(back_populates="meal_links")
+    recipe: "Recipe" = Relationship(back_populates="food_links")
+    food: "Food" = Relationship(back_populates="recipe_links")
 
 
 class _FoodBase(SQLModel):
@@ -55,7 +57,7 @@ class _FoodBase(SQLModel):
 
 class Food(_FoodBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    meal_links: list[MealFoodLink] = Relationship(back_populates="food")
+    recipe_links: list[RecipeFoodLink] = Relationship(back_populates="food")
 
 
 class FoodCreate(_FoodBase):
@@ -66,45 +68,45 @@ class FoodPublic(_FoodBase):
     id: int
 
 
-class _MealBase(SQLModel):
+class _RecipeBase(SQLModel):
     name: str = Field(
-        description="The name of the meal, e.g. Chia Seed Pudding. The name must be unique.",
+        description="The name of the recipe, e.g. Chia Seed Pudding. The name must be unique.",
         index=True,
         unique=True,
     )
     kind: str = Field(
-        description="E.g. Chia Seed Pudding is a meal name. But can be with different kind, e.g. with milk, with yogurt, or with mango juice, etc.",
+        description="E.g. Chia Seed Pudding is a recipe name. But can be with different kind, e.g. with milk, with yogurt, or with mango juice, etc.",
         default=_DEFAULT_KIND,
         index=True,
     )
 
 
-class Meal(_MealBase, table=True):
+class Recipe(_RecipeBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    food_links: list[MealFoodLink] = Relationship(back_populates="meal")
+    food_links: list[RecipeFoodLink] = Relationship(back_populates="recipe")
 
 
-class _FoodInMeal(SQLModel):
-    name: str = Field(description="The ID of the food item in the meal.")
+class _FoodInRecipe(SQLModel):
+    name: str = Field(description="The ID of the food item in the recipe.")
     kind: str = Field(
-        description="The kind of the food item in the meal.", default=_DEFAULT_KIND
+        description="The kind of the food item in the recipe.", default=_DEFAULT_KIND
     )
-    amount: float = Field(description="The amount of the food item in the meal.")
+    amount: float = Field(description="The amount of the food item in the recipe.")
     unit: Unit = Field(
-        description="The unit of the amount of the food item in the meal."
+        description="The unit of the amount of the food item in the recipe."
     )
 
 
-class MealCreate(_MealBase):
-    foods: list[_FoodInMeal] = Field(
-        description="The list of food items included in the meal along with their amounts and units."
+class RecipeCreate(_RecipeBase):
+    foods: list[_FoodInRecipe] = Field(
+        description="The list of food items included in the recipe along with their amounts and units."
     )
 
 
-class MealPublic(_MealBase):
+class RecipePublic(_RecipeBase):
     id: int
-    foods: list[_FoodInMeal] = Field(
-        description="The list of food items included in the meal along with their amounts and units."
+    foods: list[_FoodInRecipe] = Field(
+        description="The list of food items included in the recipe along with their amounts and units."
     )
 
 
@@ -113,14 +115,14 @@ class Consumption(SQLModel, table=True):
     timestamp: datetime = Field(
         description="UTC timestamp of consumption. Default to now.",
     )
-    meal_id: int | None = Field(
+    recipe_id: int | None = Field(
         default=None,
-        description="The meal consumed. If you eat a meal, which is a pre-defined combination of food items, you can use this field.",
-        foreign_key="meal.id",
+        description="The recipe consumed. If you eat a recipe, which is a pre-defined combination of food items, you can use this field.",
+        foreign_key="recipe.id",
     )
     food_id: int | None = Field(
         default=None,
-        description="The food item consumed. If you just eat a food not included in a meal, you can use this field.",
+        description="The food item consumed. If you just eat a food not included in a recipe, you can use this field.",
         foreign_key="food.id",
     )
     amount: float | None = Field(
@@ -134,7 +136,7 @@ class Consumption(SQLModel, table=True):
 
 
 class ConsumptionKind(str, Enum):
-    MEAL = "Meal"
+    RECIPE = "Recipe"
     FOOD = "Food"
 
 
@@ -143,21 +145,21 @@ class ConsumptionCreate(SQLModel):
         description=f"Format: {DATETIME_FORMAT}. The app will convert it to ISO 8601 format automatically.",
     )
     kind: ConsumptionKind = Field(
-        description="The kind of the item consumed, either a meal or a food item.",
+        description="The kind of the item consumed, either a recipe or a food item.",
     )
     item_name: str = Field(
-        description="The name of the meal or food item consumed. The combined name and kind uniquely identify the item.",
+        description="The name of the recipe or food item consumed. The combined name and kind uniquely identify the item.",
     )
     item_kind: str = Field(
-        description="The kind of the item consumed, for food, it is food kind; for meal, it is meal kind. The combined name and kind uniquely identify the item.",
+        description="The kind of the item consumed, for food, it is food kind; for recipe, it is recipe kind. The combined name and kind uniquely identify the item.",
         default=_DEFAULT_KIND,
     )
     amount: float | None = Field(
-        description="The amount of the food/meal consumed. E.g., 15.0 means 15g, 15mL, or 15% depending on the unit of the food/meal.",
+        description="The amount of the food/recipe consumed. E.g., 15.0 means 15g, 15mL, or 15% depending on the unit of the food/recipe.",
         default=None,
     )
     unit: str | None = Field(
-        description="The unit of the amount of the food/meal consumed. E.g., g, mL, or %, etc.",
+        description="The unit of the amount of the food/recipe consumed. E.g., g, mL, or %, etc.",
         default=None,
     )
 
@@ -170,23 +172,23 @@ class ConsumptionPatch(SQLModel):
         default=None,
     )
     kind: ConsumptionKind | None = Field(
-        description="The kind of the item consumed, either a meal or a food item.",
+        description="The kind of the item consumed, either a recipe or a food item.",
         default=None,
     )
     item_name: str | None = Field(
-        description="The name of the meal or food item consumed. The combined name and kind uniquely identify the item.",
+        description="The name of the recipe or food item consumed. The combined name and kind uniquely identify the item.",
         default=None,
     )
     item_kind: str | None = Field(
-        description="The kind of the item consumed, for food, it is food kind; for meal, it is meal kind. The combined name and kind uniquely identify the item.",
+        description="The kind of the item consumed, for food, it is food kind; for recipe, it is recipe kind. The combined name and kind uniquely identify the item.",
         default=_DEFAULT_KIND,
     )
     amount: float | None = Field(
-        description="The amount of the food/meal consumed. E.g., 15.0 means 15g, 15mL, or 15% depending on the unit of the food/meal.",
+        description="The amount of the food/recipe consumed. E.g., 15.0 means 15g, 15mL, or 15% depending on the unit of the food/recipe.",
         default=None,
     )
     unit: str | None = Field(
-        description="The unit of the amount of the food/meal consumed. E.g., g, mL, or %, etc.",
+        description="The unit of the amount of the food/recipe consumed. E.g., g, mL, or %, etc.",
         default=None,
     )
 
@@ -195,36 +197,36 @@ class ConsumptionPublic(ConsumptionCreate):
     id: int
 
 
-def meal_to_meal_public(meal: Meal) -> MealPublic:
-    """Convert Meal to MealPublic.
+def recipe_to_recipe_public(recipe: Recipe) -> RecipePublic:
+    """Convert Recipe to RecipePublic.
 
     Args:
-        meal (Meal): The meal should be retrieved from the database so that meal.id is not None.
+        recipe (Recipe): The recipe should be retrieved from the database so that recipe.id is not None.
 
     Returns:
-        MealPublic
+        RecipePublic
     """
-    foods_in_meal = []
-    for link in meal.food_links:
-        food_in_meal = _FoodInMeal(
+    foods_in_recipe = []
+    for link in recipe.food_links:
+        food_in_recipe = _FoodInRecipe(
             name=link.food.name,
             kind=link.food.kind,
             amount=link.amount,
             unit=Unit(link.unit),
         )
-        foods_in_meal.append(food_in_meal)
+        foods_in_recipe.append(food_in_recipe)
 
     assert (
-        meal.id is not None
-    ), "meal must be retrieved from the database, so meal.id cannot be None"
+        recipe.id is not None
+    ), "recipe must be retrieved from the database, so recipe.id cannot be None"
 
-    meal_public = MealPublic(
-        id=meal.id,
-        name=meal.name,
-        kind=meal.kind,
-        foods=foods_in_meal,
+    recipe_public = RecipePublic(
+        id=recipe.id,
+        name=recipe.name,
+        kind=recipe.kind,
+        foods=foods_in_recipe,
     )
-    return meal_public
+    return recipe_public
 
 
 def consumption_to_consumption_public(
@@ -243,11 +245,11 @@ def consumption_to_consumption_public(
     ), "consumption must be retrieved from the database, so consumption.id cannot be None"
 
     # Get item_name and item_kind
-    if consumption.meal_id is not None:
-        meal = session.get(Meal, consumption.meal_id)
-        if meal:
-            item_name = meal.name
-            item_kind = meal.kind
+    if consumption.recipe_id is not None:
+        recipe = session.get(Recipe, consumption.recipe_id)
+        if recipe:
+            item_name = recipe.name
+            item_kind = recipe.kind
     elif consumption.food_id is not None:
         food = session.get(Food, consumption.food_id)
         if food:
@@ -258,8 +260,8 @@ def consumption_to_consumption_public(
         id=consumption.id,
         timestamp=consumption.timestamp.strftime(DATETIME_FORMAT),
         kind=(
-            ConsumptionKind.MEAL
-            if consumption.meal_id is not None
+            ConsumptionKind.RECIPE
+            if consumption.recipe_id is not None
             else ConsumptionKind.FOOD
         ),
         item_name=item_name,

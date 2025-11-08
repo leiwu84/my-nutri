@@ -18,12 +18,12 @@ from src.database.models import (
     Food,
     FoodCreate,
     FoodPublic,
-    Meal,
-    MealCreate,
-    MealFoodLink,
-    MealPublic,
+    Recipe,
+    RecipeCreate,
+    RecipeFoodLink,
+    RecipePublic,
     consumption_to_consumption_public,
-    meal_to_meal_public,
+    recipe_to_recipe_public,
 )
 
 
@@ -171,25 +171,25 @@ async def delete_food(food_id: int, session: SessionDep):
         raise HTTPException(status_code=500, detail=msg)
 
 
-@app.post("/meals/")
-async def create_meals(meals: list[MealCreate], session: SessionDep):
-    if not meals:
+@app.post("/recipes/")
+async def create_recipes(recipes: list[RecipeCreate], session: SessionDep):
+    if not recipes:
         return
 
     try:
         existing = []
-        for meal in meals:
+        for recipe in recipes:
             # Check existing to avoid duplicates
-            statement = select(Meal).where(
-                Meal.name == meal.name, Meal.kind == meal.kind
+            statement = select(Recipe).where(
+                Recipe.name == recipe.name, Recipe.kind == recipe.kind
             )
-            existing_meal = session.exec(statement).one_or_none()
-            if existing_meal:
-                existing.append(existing_meal)
+            existing_recipe = session.exec(statement).one_or_none()
+            if existing_recipe:
+                existing.append(existing_recipe)
                 continue
 
-            meal_new = Meal.model_validate(meal)
-            for food_input in meal.foods:
+            recipe_new = Recipe.model_validate(recipe)
+            for food_input in recipe.foods:
 
                 food = session.exec(
                     select(Food).where(
@@ -197,129 +197,133 @@ async def create_meals(meals: list[MealCreate], session: SessionDep):
                     )
                 ).one()
 
-                link_new = MealFoodLink(
-                    meal=meal_new,
+                link_new = RecipeFoodLink(
+                    recipe=recipe_new,
                     food=food,
                     amount=food_input.amount,
                     unit=food_input.unit,
                 )
 
-                # No need to add meal_new separately, as it will be added via the link_new relationship
+                # No need to add recipe_new separately, as it will be added via the link_new relationship
                 session.add(link_new)
 
         session.commit()
         return {
-            "detail": f"Created {len(meals) - len(existing)} meals; skipped {len(existing)} duplicates based on name and kind."
+            "detail": f"Created {len(recipes) - len(existing)} recipes; skipped {len(existing)} duplicates based on name and kind."
         }
     except IntegrityError:
         raise HTTPException(
             status_code=409,
-            detail=f"Meal already exists: name {meal.name} and kind {meal.kind}.",
+            detail=f"Recipe already exists: name {recipe.name} and kind {recipe.kind}.",
         )
     except NoResultFound:  # .one() raises NoResultFound if no results are found
         raise HTTPException(
             status_code=404,
-            detail=f"Food not found when creating meal: {food_input.name} and kind {food_input.kind}.",
+            detail=f"Food not found when creating recipe: {food_input.name} and kind {food_input.kind}.",
         )
     except Exception:
         msg = traceback.format_exc()
         raise HTTPException(status_code=500, detail=msg)
 
 
-@app.get("/meals/", response_model=list[MealPublic])
-async def read_meals(
+@app.get("/recipes/", response_model=list[RecipePublic])
+async def read_recipes(
     session: SessionDep, offset: int = 0, limit: int = Query(default=5, ge=1, le=100)
 ):
     try:
-        meals = session.exec(select(Meal).offset(offset).limit(limit)).all()
-        meals_public = []
-        for meal in meals:
-            meal_public = meal_to_meal_public(meal=meal)
-            meals_public.append(meal_public)
-        return meals_public
+        recipes = session.exec(select(Recipe).offset(offset).limit(limit)).all()
+        recipes_public = []
+        for recipe in recipes:
+            recipe_public = recipe_to_recipe_public(recipe=recipe)
+            recipes_public.append(recipe_public)
+        return recipes_public
     except Exception:
         msg = traceback.format_exc()
         raise HTTPException(status_code=500, detail=msg)
 
 
-@app.get("/meals/{meal_id}", response_model=MealPublic)
-async def read_meal(meal_id: int, session: SessionDep):
+@app.get("/recipes/{recipe_id}", response_model=RecipePublic)
+async def read_recipe(recipe_id: int, session: SessionDep):
     try:
-        meal = session.get(Meal, meal_id)
-        if not meal:
+        recipe = session.get(Recipe, recipe_id)
+        if not recipe:
             raise HTTPException(
-                status_code=404, detail=f"Meal with ID {meal_id} not found."
+                status_code=404, detail=f"Recipe with ID {recipe_id} not found."
             )
-        meal_public = meal_to_meal_public(meal=meal)
-        return meal_public
+        recipe_public = recipe_to_recipe_public(recipe=recipe)
+        return recipe_public
     except Exception:
         msg = traceback.format_exc()
         raise HTTPException(status_code=500, detail=msg)
 
 
-@app.get("/meals_by_name_kind/{meal_name}", response_model=list[MealPublic])
-async def read_meal_by_name_kind(
-    session: SessionDep, meal_name: str, meal_kind: str | None = None
+@app.get("/recipes_by_name_kind/{recipe_name}", response_model=list[RecipePublic])
+async def read_recipe_by_name_kind(
+    session: SessionDep, recipe_name: str, recipe_kind: str | None = None
 ):
-    if not meal_name:
+    if not recipe_name:
         return []
     try:
-        if meal_kind:
-            meal = session.exec(
-                select(Meal).where(Meal.name == meal_name, Meal.kind == meal_kind)
+        if recipe_kind:
+            recipe = session.exec(
+                select(Recipe).where(
+                    Recipe.name == recipe_name, Recipe.kind == recipe_kind
+                )
             ).one()
-            meals = [meal]
+            recipes = [recipe]
         else:
-            meals = session.exec(select(Meal).where(Meal.name == meal_name)).all()
+            recipes = session.exec(
+                select(Recipe).where(Recipe.name == recipe_name)
+            ).all()
 
-        meals_public = []
-        for meal in meals:
-            meal_public = meal_to_meal_public(meal=meal)
-            meals_public.append(meal_public)
-        return meals_public
+        recipes_public = []
+        for recipe in recipes:
+            recipe_public = recipe_to_recipe_public(recipe=recipe)
+            recipes_public.append(recipe_public)
+        return recipes_public
 
     except NoResultFound:  # .one() raises NoResultFound if no results are found
         raise HTTPException(
             status_code=404,
-            detail=f"Meal not found: name {meal_name} and kind {meal_kind}.",
+            detail=f"Recipe not found: name {recipe_name} and kind {recipe_kind}.",
         )
     except Exception:
         msg = traceback.format_exc()
         raise HTTPException(status_code=500, detail=msg)
 
 
-@app.patch("/meals/{meal_id}", response_model=MealPublic)
-async def update_meal(meal_id: int, meal: MealCreate, session: SessionDep):
+@app.patch("/recipes/{recipe_id}", response_model=RecipePublic)
+async def update_recipe(recipe_id: int, recipe: RecipeCreate, session: SessionDep):
     try:
-        meal_db = session.get(Meal, meal_id)
-        if not meal_db:
+        recipe_db = session.get(Recipe, recipe_id)
+        if not recipe_db:
             raise HTTPException(
-                status_code=404, detail=f"Meal with ID1 {meal_id} not found."
+                status_code=404, detail=f"Recipe with ID1 {recipe_id} not found."
             )
 
-        meal_new = meal.model_dump(exclude_unset=True)
-        meal_db.sqlmodel_update(meal_new)
-        session.add(meal_db)
+        recipe_new = recipe.model_dump(exclude_unset=True)
+        recipe_db.sqlmodel_update(recipe_new)
+        session.add(recipe_db)
         session.commit()
-        session.refresh(meal_db)
-        return meal_db
+        session.refresh(recipe_db)
+        return recipe_db
     except Exception:
         msg = traceback.format_exc()
         raise HTTPException(status_code=500, detail=msg)
 
 
-@app.delete("/meals/{meal_id}")
-async def delete_meal(meal_id: int, session: SessionDep):
+@app.delete("/recipes/{recipe_id}")
+async def delete_recipe(recipe_id: int, session: SessionDep):
     try:
-        meal = session.get(Meal, meal_id)
-        if not meal:
+        recipe = session.get(Recipe, recipe_id)
+        if not recipe:
             raise HTTPException(
-                status_code=404, detail=f"Meal with ID {meal_id} not found."
+                status_code=404, detail=f"Recipe with ID {recipe_id} not found."
             )
 
-        session.delete(meal)
+        session.delete(recipe)
         session.commit()
-        return {"detail": f"Meal with ID {meal_id} deleted."}
+        return {"detail": f"Recipe with ID {recipe_id} deleted."}
     except Exception:
         msg = traceback.format_exc()
         raise HTTPException(status_code=500, detail=msg)
@@ -338,16 +342,16 @@ async def create_consumption(
                 consumption_input.timestamp, DATETIME_FORMAT
             ).replace(tzinfo=timezone.utc)
 
-            if consumption_input.kind == ConsumptionKind.MEAL:
-                meal = session.exec(
-                    select(Meal).where(
-                        Meal.name == consumption_input.item_name,
-                        Meal.kind == consumption_input.item_kind,
+            if consumption_input.kind == ConsumptionKind.RECIPE:
+                recipe = session.exec(
+                    select(Recipe).where(
+                        Recipe.name == consumption_input.item_name,
+                        Recipe.kind == consumption_input.item_kind,
                     )
                 ).one()
                 consumption = Consumption(
                     timestamp=timestamp,
-                    meal_id=meal.id,
+                    recipe_id=recipe.id,
                     amount=consumption_input.amount,
                     unit=consumption_input.unit,
                 )

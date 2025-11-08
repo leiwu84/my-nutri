@@ -1,7 +1,7 @@
 [
     {
         "timestamp": "2025-10-25 12:00",
-        "kind": "Meal",
+        "kind": "Recipe",
         "item_name": "Salted Apple",
         "item_kind": "General",
         "amount": 50,
